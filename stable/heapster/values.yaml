@@ -3,7 +3,7 @@
 replicaCount: 1
 image:
   repository: k8s.gcr.io/heapster
-  tag: v1.5.2
+  tag: v1.5.4
   pullPolicy: IfNotPresent
 ## Here labels can be added to the heapster deployment
 # labels:
@@ -72,7 +72,8 @@ resources:
 ##
 command:
 - "/heapster"
-- "--source=kubernetes.summary_api:''"
+#- "--source=kubernetes.summary_api:''"
+- "--source=kubernetes.summary_api:''?useServiceAccount=true&kubeletHttps=true&kubeletPort=10250&insecure=true"
 
 ## heapster env variables
 env: []
@@ -84,7 +85,7 @@ resizer:
   enabled: true
   image:
     repository: k8s.gcr.io/addon-resizer
-    tag: 1.7
+    tag: 1.8.4
     pullPolicy: IfNotPresent
   resources:
     limits:
