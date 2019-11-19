@@ -14,12 +14,14 @@ This chart bootstraps a [Redmine](https://github.com/bitnami/bitnami-docker-redm
 
 It also packages the [Bitnami MariaDB chart](https://github.com/kubernetes/charts/tree/master/stable/mariadb) and the [PostgreSQL chart](https://github.com/kubernetes/charts/tree/master/stable/postgresql) which are required for bootstrapping a MariaDB/PostgreSQL deployment for the database requirements of the Redmine application.
 
-Bitnami charts can be used with [Kubeapps](https://kubeapps.com/) for deployment and management of Helm Charts in clusters.
+Bitnami charts can be used with [Kubeapps](https://kubeapps.com/) for deployment and management of Helm Charts in clusters. This chart has been tested to work with NGINX Ingress, cert-manager, fluentd and Prometheus on top of the [BKPR](https://kubeprod.io/).
 
 ## Prerequisites
 
-- Kubernetes 1.4+ with Beta APIs enabled
+- Kubernetes 1.12+
+- Helm 2.11+ or Helm 3.0-beta3+
 - PV provisioner support in the underlying infrastructure
+- ReadWriteMany volumes for deployment scaling
 
 ## Installing the Chart
 
@@ -29,7 +31,7 @@ To install the chart with the release name `my-release`:
 $ helm install --name my-release stable/redmine
 ```
 
-The command deploys Redmine on the Kubernetes cluster in the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
+The command deploys Redmine on the Kubernetes cluster in the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
 
 > **Tip**: List all releases using `helm list`
 
@@ -51,18 +53,22 @@ This chart includes the option to use a PostgreSQL database for Redmine instead 
 helm install --name my-release stable/redmine --set databaseType.mariadb=false,databaseType.postgresql=true
 ```
 
-## Configuration
+## Parameters
 
 The following table lists the configurable parameters of the Redmine chart and their default values.
 
 |            Parameter                |              Description                   |                          Default                        |
 | ----------------------------------- | ------------------------------------------ | ------------------------------------------------------- |
 | `global.imageRegistry`              | Global Docker image registr  y             | `nil`                                                   |
+| `global.imagePullSecrets`           | Global Docker registry secret names as an array | `[]` (does not add image pull secrets to deployed pods) |
+| `global.storageClass`                     | Global storage class for dynamic provisioning                                               | `nil`                                                        |
 | `image.registry`                    | Redmine image registry                     | `docker.io`                                             |
 | `image.repository`                  | Redmine image name                         | `bitnami/redmine`                                       |
-| `image.tag`                         | Redmine image tag                          | `{VERSION}`                                             |
-| `image.pullPolicy`                  | Image pull policy                          | `Always` if `imageTag` is `latest`, else `IfNotPresent` |
-| `image.pullSecrets`                 | Specify image pull secrets                 | `nil`                                                   |
+| `image.tag`                         | Redmine image tag                          | `{TAG_NAME}`                                            |
+| `image.pullPolicy`                  | Image pull policy                          | `IfNotPresent`                                          |
+| `image.pullSecrets`                 | Specify docker-registry secret names as an array | `[]` (does not add image pull secrets to deployed pods)   |
+| `nameOverride`                      | String to partially override redmine.fullname template with a string (will prepend the release name) | `nil`     |
+| `fullnameOverride`                  | String to fully override redmine.fullname template with a string                                     | `nil`     |
 | `redmineUsername`                   | User of the application                    | `user`                                                  |
 | `redminePassword`                   | Application password                       | _random 10 character long alphanumeric string_          |
 | `redmineEmail`                      | Admin email                                | `user@example.com`                                      |
@@ -73,16 +79,25 @@ The following table lists the configurable parameters of the Redmine chart and t
 | `smtpUser`                          | SMTP user                                  | `nil`                                                   |
 | `smtpPassword`                      | SMTP password                              | `nil`                                                   |
 | `smtpTls`                           | Use TLS encryption with SMTP               | `nil`                                                   |
-| `databaseType.postgresql`           | Select postgresql database                 | `false`                                                 |
-| `databaseType.mariadb`              | Select mariadb database                    | `true`                                                  |
+| `databaseType.postgresql`           | Select PostgreSQL as database              | `false`                                                 |
+| `databaseType.mariadb`              | Select MariaDB as database                 | `true`                                                  |
+| `mariadb.enabled`                   | Whether to deploy a MariaDB server to satisfy the applications database requirements     | `true`    |
 | `mariadb.rootUser.password`         | MariaDB admin password                     | `nil`                                                   |
-| `postgresql.postgresqlPassword`     | PostgreSQL admin password                  | `nil`                                                   |
-| `service.type`                    | Kubernetes Service type                    | `LoadBalancer`                                          |
-| `service.port`                    | Service HTTP port                  | `80`                                          |
-| `service.nodePorts.http`                 | Kubernetes http node port                  | `""`                                                    |
-| `service.externalTrafficPolicy`   | Enable client source IP preservation       | `Cluster`                                               |
-| `service.loadBalancerIP`   | LoadBalancer service IP address       | `""`                                               |
-| `service.loadBalancerSourceRanges`   | An array of load balancer sources          | `0.0.0.0/0`                                             |
+| `postgresql.enabled`                | Whether to deploy a PostgreSQL server to satisfy the applications database requirements  | `false`   |
+| `postgresql.postgresqlDatabase`     | PostgreSQL database                        | `bitnami_redmine`                                       |
+| `postgresql.postgresqlUsername`     | PostgreSQL user                            | `bn_redmine`                                            |
+| `postgresql.postgresqlPassword`     | PostgreSQL password                        | `nil`                                                   |
+| `externalDatabase.host`             | Host of the external database              | `localhost`                                             |
+| `externalDatabase.name`             | Name of the external database              | `localhost`                                             |
+| `externalDatabase.user`             | External db user                           | `user`                                                  |
+| `externalDatabase.password`         | Password for the db user                   | `""`                                                    |
+| `externalDatabase.port`             | Database port number                       | `3306`                                                  |
+| `service.type`                      | Kubernetes Service type                    | `LoadBalancer`                                          |
+| `service.port`                      | Service HTTP port                          | `80`                                                    |
+| `service.nodePorts.http`            | Kubernetes http node port                  | `""`                                                    |
+| `service.externalTrafficPolicy`     | Enable client source IP preservation       | `Cluster`                                               |
+| `service.loadBalancerIP`            | LoadBalancer service IP address            | `""`                                                    |
+| `service.loadBalancerSourceRanges`  | An array of load balancer sources          | `0.0.0.0/0`                                             |
 | `ingress.enabled`                   | Enable or disable the ingress              | `false`                                                 |
 | `ingress.hosts[0].name`             | Hostname to your Redmine installation      | `redmine.local  `                                       |
 | `ingress.hosts[0].path`             | Path within the url structure              | `/`                                                     |
@@ -93,6 +108,10 @@ The following table lists the configurable parameters of the Redmine chart and t
 | `ingress.secrets[0].name`           | TLS Secret Name                            | `nil`                                                   |
 | `ingress.secrets[0].certificate`    | TLS Secret Certificate                     | `nil`                                                   |
 | `ingress.secrets[0].key`            | TLS Secret Key                             | `nil`                                                   |
+| `nodeSelector`                      | Node labels for pod assignment             | `{}`                                                    |
+| `tolerations`                       | List of node taints to tolerate            | `{}`                                                    |
+| `affinity`                          | Map of node/pod affinities                 | `{}`                                                    |
+| `podAnnotations`                    | Pod annotations                            | `{}`                                                    |
 | `persistence.enabled`               | Enable persistence using PVC               | `true`                                                  |
 | `persistence.existingClaim`         | The name of an existing PVC                | `nil`                                                   |
 | `persistence.storageClass`          | PVC Storage Class                          | `nil` (uses alpha storage class annotation)             |
@@ -124,12 +143,17 @@ $ helm install --name my-release -f values.yaml stable/redmine
 
 > **Tip**: You can use the default [values.yaml](values.yaml)
 
-## Replicas
+## Configuration and installation details
 
-Redmine writes uploaded files to a persistent volume. By default that volume
-cannot be shared between pods (RWO). In such a configuration the `replicas` option
-must be set to `1`. If the persistent volume supports more than one writer
-(RWX), ie NFS, `replicas` can be greater than `1`.
+### [Rolling VS Immutable tags](https://docs.bitnami.com/containers/how-to/understand-rolling-tags-containers/)
+
+It is strongly recommended to use immutable tags in a production environment. This ensures your deployment does not change automatically if the same tag is updated with a different image.
+
+Bitnami will release a new chart updating its containers if a new version of the main container, significant changes, or critical vulnerabilities exist.
+
+### Replicas
+
+Redmine writes uploaded files to a persistent volume. By default that volume cannot be shared between pods (RWO). In such a configuration the `replicas` option must be set to `1`. If the persistent volume supports more than one writer (RWX), ie NFS, `replicas` can be greater than `1`.
 
 ## Persistence
 
@@ -137,7 +161,7 @@ The [Bitnami Redmine](https://github.com/bitnami/bitnami-docker-redmine) image s
 
 Persistent Volume Claims are used to keep the data across deployments. This is known to work in GCE, AWS, and minikube. The volume is created using dynamic volume provisioning. Clusters configured with NFS mounts require manually managed volumes and claims.
 
-See the [Configuration](#configuration) section to configure the PVC or to disable persistence.
+See the [Parameters](#parameters) section to configure the PVC or to disable persistence.
 
 ### Existing PersistentVolumeClaims
 
@@ -153,6 +177,14 @@ $ helm install --name test --set persistence.existingClaim=PVC_REDMINE,mariadb.p
 ```
 
 ## Upgrading
+
+### 13.0.0
+
+Helm performs a lookup for the object based on its group (apps), version (v1), and kind (Deployment). Also known as its GroupVersionKind, or GVK. Changing the GVK is considered a compatibility breaker from Kubernetes' point of view, so you cannot "upgrade" those objects to the new GVK in-place. Earlier versions of Helm 3 did not perform the lookup correctly which has since been fixed to match the spec.
+
+In https://github.com/helm/charts/pull/17309 the `apiVersion` of the deployment resources was updated to `apps/v1` in tune with the api's deprecated, resulting in compatibility breakage.
+
+This major version signifies this change.
 
 ### To 5.0.0
 

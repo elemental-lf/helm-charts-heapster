@@ -49,7 +49,7 @@ The following table lists the configurable parameters of the Redmine chart and t
 | --------------------------------- | ---------------------------------------- | ------------------------------------------------------- |
 | `replicaCount`                    | Number of replicas to start              | `1`                                                     |
 | `image.repository`                | Bookstack image name                     | `solidnerd/bookstack`                                   |
-| `image.tag`                       | Bookstack image tag                      | `0.24.2`                                                |
+| `image.tag`                       | Bookstack image tag                      | `0.27.4-1`                                                |
 | `image.pullPolicy`                | Bookstack image pull policy              | `IfNotPresent`                                          |
 | `externalDatabase.host`           | Host of the external database            | `nil`                                                   |
 | `externalDatabase.port`           | Port of the external database            | `3306`                                                  |
@@ -61,10 +61,10 @@ The following table lists the configurable parameters of the Redmine chart and t
 | `mariadb.db.user`                 | Database user to create                  | `bookstack`                                             |
 | `mariadb.db.password`             | Password for the database                | `nil`                                                   |
 | `mariadb.rootUser.password`        | MariaDB admin password                   | `nil`                                                   |
-| `mariadb.persistence.enabled`        | Enable MariaDB persistence using PVC     | `true`                                                  |
-| `mariadb.persistence.storageClass`   | PVC Storage Class for MariaDB volume     | `nil` (uses alpha storage class annotation)             |
-| `mariadb.persistence.accessMode`     | PVC Access Mode for MariaDB volume       | `ReadWriteOnce`                                         |
-| `mariadb.persistence.size`           | PVC Storage Request for MariaDB volume   | `8Gi`                                                   |
+| `mariadb.master.persistence.enabled`        | Enable MariaDB persistence using PVC     | `true`                                                  |
+| `mariadb.master.persistence.storageClass`   | PVC Storage Class for MariaDB volume     | `nil` (uses alpha storage class annotation)             |
+| `mariadb.master.persistence.accessMode`     | PVC Access Mode for MariaDB volume       | `ReadWriteOnce`                                         |
+| `mariadb.master.persistence.size`           | PVC Storage Request for MariaDB volume   | `8Gi`                                                   |
 | `service.type`                    | Desired service type                                | `ClusterIP`               |
 | `service.port`                    | Service exposed port                               | `80`                    |
 | `podSecurityPolicy.enabled`	    | Create & use Pod Security Policy resources  | `false`						      |
@@ -87,6 +87,13 @@ The following table lists the configurable parameters of the Redmine chart and t
 | `ingress.tls[i].secretName`       | The secret kubernetes.io/tls             | `nil`                                                   |
 | `ingress.tls[i].hosts[j]`         | The virtual host name                    | `nil`                                                   |
 | `resources`                       | Resources allocation (Requests and Limits) | `{}` |
+| `ldap.enabled`                    | Enable or disable LDAP authentication. [See official docs for details](https://www.bookstackapp.com/docs/admin/ldap-auth/) | `false` |
+| `ldap.server`                    | LDAP server address | `nil` |
+| `ldap.base_dn`                    | Base DN where users will be searched | `nil` |
+| `ldap.dn`                    | User which will make search queries. Leave empty to search anonymously. | `nil` |
+| `ldap.pass`                    | Password of user performing search queries.  | `nil` |
+| `ldap.userFilter`                    | A filter to use when searching for users | `nil` |
+| `ldap.version`                    | Set the LDAP version to use when connecting to the server. Required especially when using AD. | `nil` |
 
 The above parameters map to the env variables defined in the [Bookstack image](https://hub.docker.com/r/solidnerd/bookstack/) and the MariaDB/MySQL database settings. For more information please refer to the [Bookstack](https://hub.docker.com/r/solidnerd/bookstack/) image documentation.
 
