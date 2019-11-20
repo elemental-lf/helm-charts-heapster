@@ -84,8 +84,8 @@ env: []
 resizer:
   enabled: true
   image:
-    repository: k8s.gcr.io/addon-resizer
-    tag: 1.8.4
+    repository: k8s.gcr.io/addon-resizer-amd64
+    tag: 2.1
     pullPolicy: IfNotPresent
   resources:
     limits:
