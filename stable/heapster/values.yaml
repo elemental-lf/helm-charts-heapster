@@ -57,11 +57,11 @@ service:
   annotations: {}
 resources:
   limits:
-    cpu: 100m
-    memory: 128Mi
+    cpu: 400m
+    memory: 400Mi
   requests:
-    cpu: 100m
-    memory: 128Mi
+    cpu: 400m
+    memory: 400Mi
 
 ## Heapster command and arguments
 ## Default source=kubernetes.summary_api:''
@@ -82,7 +82,7 @@ env: []
 ## Resizer is enabled by default
 ##
 resizer:
-  enabled: true
+  enabled: false
   image:
     repository: k8s.gcr.io/addon-resizer-amd64
     tag: 2.1
